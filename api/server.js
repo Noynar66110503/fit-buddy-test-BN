@@ -342,7 +342,7 @@ app.post('/users', (req, res) => {
 
 app.get('/getUserBMI', (req, res) => {
     const userId = req.query.userId;
-    const sql = 'SELECT  u.user_id , u_name , h.bmi FROM health_assessment h JOIN users u ON h.user_id = u.user_id ';
+    const sql = 'SELECT  u.user_id , u.name , h.bmi FROM health_assessment h JOIN users u ON h.user_id = u.user_id ';
     
     db.query(sql, [userId], (err, results) => {
       if (err) {
