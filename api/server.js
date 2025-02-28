@@ -3,7 +3,10 @@ const mysql = require('mysql2');
 const bodyParser = require('body-parser');
 const path = require('path');
 const cors = require('cors');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
+const { readFileSync } = require("fs");
+const fs = require('fs');
+
 require('dotenv').config();
 
 const app = express();
@@ -39,6 +42,7 @@ app.get('/test-bcrypt', async (req, res) => {
         res.status(500).json({ message: "Bcrypt test failed", error: error.message });
     }
 });
+let cer_part = path.join(process.cwd(), 'isrgrootx1.pem');
 
 const db = mysql.createPool({
     connectionLimit: 10,
@@ -48,7 +52,9 @@ const db = mysql.createPool({
     database: process.env.DB_NAME,
     waitForConnections: true,
     queueLimit: 0,
-    ssl: { rejectUnauthorized: true }
+    ssl:{
+        ca:fs.readFileSync(cer_part)
+    }
 });
 
 app.get("/", (req, res) => {
