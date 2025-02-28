@@ -42,7 +42,7 @@ app.get('/test-bcrypt', async (req, res) => {
         res.status(500).json({ message: "Bcrypt test failed", error: error.message });
     }
 });
-let cer_part = path.join(process.cwd(), 'isrgrootx1.pem');
+let cer_part = path.join(process.cwd(), 'isrgrootx1 .pem');
 
 const db = mysql.createPool({
     connectionLimit: 10,
