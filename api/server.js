@@ -14,13 +14,31 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+app.use(express.json()); // รองรับ JSON Body
+app.use(express.urlencoded({ extended: true })); // รองรับ Form Data
 
-app.use(express.json());
 
 app.get("/", (req, res) => {
     res.send("API is working!");
 });
 
+app.get('/test-bcrypt', async (req, res) => {
+    try {
+        const password = "testpassword";
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        
+        const isMatch = await bcrypt.compare(password, hashedPassword);
+
+        res.json({ 
+            hashedPassword, 
+            isMatch 
+        });
+    } catch (error) {
+        console.error("❌ Bcrypt Error:", error);
+        res.status(500).json({ message: "Bcrypt test failed", error: error.message });
+    }
+});
 
 const db = mysql.createPool({
     connectionLimit: 10,
