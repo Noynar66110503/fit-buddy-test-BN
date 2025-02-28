@@ -21,25 +21,17 @@ app.get("/", (req, res) => {
     res.send("API is working!");
 });
 
-module.exports = app;  // ให้ Vercel ใช้งาน API ได้
-// MySQL Connection
 
-const db = mysql.createConnection({
-    host: process.env.DB_HOST || 'gateway01.us-west-2.prod.aws.tidbcloud.com',
-    user: process.env.DB_USER || '2h4VfjkR868Tumj.root',
-    password: process.env.DB_PASS || 'z3XbxukerODq7ppv',
-    database: process.env.DB_NAME || 'fit_buddy',
-    ssl: { rejectUnauthorized: true }  // รองรับ TiDB Cloud SSL
+const db = mysql.createPool({
+    connectionLimit: 10,
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME,
+    waitForConnections: true,
+    queueLimit: 0,
+    ssl: { rejectUnauthorized: true }
 });
-
-db.connect((err) => {
-    if (err) {
-        console.error('❌ MySQL connection error:', err);
-    } else {
-        console.log('✅ Connected to MySQL');
-    }
-});
-
 
 app.get("/", (req, res) => {
     res.send("API is working!");
@@ -342,7 +334,7 @@ app.post('/users', (req, res) => {
 
 app.get('/getUserBMI', (req, res) => {
     const userId = req.query.userId;
-    const sql = 'SELECT  u.user_id , u.name , h.bmi FROM health_assessment h JOIN users u ON h.user_id = u.user_id ';
+    const sql = 'SELECT h.bmi, u.created_at FROM health_assessment h JOIN users u ON h.user_id = u.user_id WHERE h.user_id = ? ORDER BY u.created_at ASC LIMIT 10';
     
     db.query(sql, [userId], (err, results) => {
       if (err) {
@@ -354,18 +346,5 @@ app.get('/getUserBMI', (req, res) => {
     });
 });
   
-app.get("/users/:id", (req, res) => {
-    const userId = req.params.id;
-    db.query("SELECT * FROM users WHERE user_id = ?", [userId], (err, results) => {
-        if (err) {
-            console.error("❌ Error fetching user:", err);
-            res.status(500).json({ error: "Internal Server Error" });
-        } else {
-            if (results.length > 0) {
-                res.json(results);  // ส่งข้อมูลของ user ตาม ID
-            } else {
-                res.status(404).json({ error: "User not found" });  // กรณีที่ไม่พบ user
-            }
-        }
-    });
-});
+// Start the server
+module.exports = app;
